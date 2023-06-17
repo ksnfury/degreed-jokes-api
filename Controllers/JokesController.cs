@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using JokeApi.Services;
 using JokeApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -16,6 +20,7 @@ public class JokesController : ControllerBase
     }
 
     [HttpGet("random")]
+    [AllowAnonymous]
     public ActionResult<JokeDto> GetRandomJoke()
     {
         var joke = _jokeService.GetRandomJoke();
@@ -27,6 +32,7 @@ public class JokesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<Dictionary<JokeLengthCategory, List<JokeDto>>> SearchJokes([FromQuery] string searchTerm)
     {
 
@@ -65,6 +71,7 @@ public class JokesController : ControllerBase
 
     // Login action for user
     [HttpPost("login")]
+    [AllowAnonymous]
     public IActionResult Login([FromBody] LoginRequest request)
     {
         // Check if the username and password are valid (dummy implementation)
@@ -83,12 +90,32 @@ public class JokesController : ControllerBase
 
     private string GenerateJwtToken(string username)
     {
-        // Generate a JWT token using your preferred JWT library
-        // Include the necessary claims, such as username and any required roles/permissions
+        // Set the secret key used for signing the token
+        var secretKey = "wZGZG2D+gG+7X+Y+kuRKMfbXSNYMaq0ZAwX3cJvT02c=";
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
-        // Dummy implementation
-        var token = "dummy.jwt.token";
-        return token;
+        // Create the signing credentials using the key and algorithm
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        // Create the claims for the token
+        var claims = new[]
+        {
+        new Claim(ClaimTypes.Name, username)
+        // Add additional claims as needed
+    };
+
+        // Create the JWT token
+        var token = new JwtSecurityToken(
+            issuer: "JokeAPI",
+            audience: "JokeAPIUsers",
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(15), // Set the token expiration time
+            signingCredentials: credentials);
+
+        // Serialize the token to a string
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+        return tokenString;
     }
 
     public class LoginRequest
