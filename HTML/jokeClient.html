@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joke API Demo</title>
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    .form-container {
+      margin-bottom: 20px;
+    }
+
+    .form-input {
+      margin-bottom: 10px;
+    }
+
+    .button-container {
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Joke API Demo</h1>
+
+    <div id="login-container">
+      <div class="form-container">
+        <input type="text" class="form-input" id="username" placeholder="Username">
+        <input type="password" class="form-input" id="password" placeholder="Password">
+      </div>
+      <div class="button-container">
+        <button id="login-btn">Login</button>
+      </div>
+    </div>
+
+    <div id="jokes-container" style="display: none;">
+      <h2>Welcome, <span id="username-label"></span>!</h2>
+      <p>Select an action:</p>
+      <div class="button-container">
+        <button id="random-joke-btn">Get Random Joke</button>
+        <button id="search-jokes-btn">Search Jokes</button>
+      </div>
+    </div>
+
+    <div id="random-joke-container" style="display: none;">
+      <h2>Random Joke</h2>
+      <p class="joke" id="random-joke-text"></p>
+    </div>
+
+    <div id="search-jokes-container" style="display: none;">
+      <h2>Search Jokes</h2>
+      <div class="form-container">
+        <input type="text" class="form-input" id="search-term" placeholder="Enter search term">
+      </div>
+      <div class="button-container">
+        <button id="search-btn">Search</button>
+      </div>
+      <div id="search-results" style="margin-top: 20px;"></div>
+    </div>
+  </div>
+
+  <script>
+    const loginContainer = document.getElementById('login-container');
+    const jokesContainer = document.getElementById('jokes-container');
+    const randomJokeContainer = document.getElementById('random-joke-container');
+    const searchJokesContainer = document.getElementById('search-jokes-container');
+    const usernameLabel = document.getElementById('username-label');
+    const randomJokeTextElement = document.getElementById('random-joke-text');
+    const searchResultsElement = document.getElementById('search-results');
+    const loginBtn = document.getElementById('login-btn');
+    const randomJokeBtn = document.getElementById('random-joke-btn');
+    const searchJokesBtn = document.getElementById('search-jokes-btn');
+    const searchBtn = document.getElementById('search-btn');
+    const searchTermInput = document.getElementById('search-term');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+
+    loginBtn.addEventListener('click', () => {
+      const username = usernameInput.value;
+      const password = passwordInput.value;
+
+      login(username, password);
+    });
+
+    randomJokeBtn.addEventListener('click', () => {
+      getRandomJoke();
+    });
+
+    searchJokesBtn.addEventListener('click', () => {
+      showSearchJokes();
+    });
+
+    searchBtn.addEventListener('click', () => {
+      const searchTerm = searchTermInput.value;
+      searchJokes(searchTerm);
+    });
+
+    function login(username, password) {
+      // Make a login request to your API
+      // Replace the placeholder URL with the actual login endpoint URL of your API
+      fetch('http://localhost:5275/api/v1/jokes/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          // Check if login was successful
+          if (data.token) {
+            // Store the JWT token in local storage
+            localStorage.setItem('token', data.token);
+
+            // Show the jokes container and hide the login container
+            loginContainer.style.display = 'none';
+            jokesContainer.style.display = 'block';
+
+            // Set the username label
+            usernameLabel.textContent = username;
+          } else {
+            // Handle unsuccessful login
+            console.error('Login failed');
+          }
+        })
+        .catch(error => {
+          console.error('Login request failed:', error);
+        });
+    }
+
+    function getRandomJoke() {
+      // Make an authenticated request to the random joke endpoint
+      const token = localStorage.getItem('token');
+
+      fetch('http://localhost:5275/api/v1/jokes/random', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          // Display the random joke
+          randomJokeTextElement.textContent = data.text;
+
+          // Show the random joke container and hide other containers
+          randomJokeContainer.style.display = 'block';
+          searchJokesContainer.style.display = 'none';
+        })
+        .catch(error => {
+          console.error('Failed to fetch random joke:', error);
+        });
+    }
+
+    function showSearchJokes() {
+      // Show the search jokes container and hide other containers
+      randomJokeContainer.style.display = 'none';
+      searchJokesContainer.style.display = 'block';
+    }
+
+    function searchJokes(searchTerm) {
+      // Make an authenticated request to the search jokes endpoint
+      const token = localStorage.getItem('token');
+
+      fetch(`http://localhost:5275/api/v1/jokes?searchTerm=${encodeURIComponent(searchTerm)}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          // Display the search results
+          displayJokes(data);
+
+          // Show the search results container and hide other containers
+          randomJokeContainer.style.display = 'none';
+          searchJokesContainer.style.display = 'block';
+        })
+        .catch(error => {
+          console.error('Failed to fetch search results:', error);
+        });
+    }
+
+    function displayJokes(jokes) {
+      const jokeContainer = document.getElementById('jokes-container');
+      jokeContainer.innerHTML = '';
+
+      for (const category in jokes) {
+        const categoryJokes = jokes[category];
+        const categoryHeading = document.createElement('h3');
+        categoryHeading.textContent = category;
+        jokeContainer.appendChild(categoryHeading);
+
+        for (const joke of categoryJokes) {
+          const jokeText = document.createElement('p');
+          jokeText.innerHTML = joke.text;
+          jokeContainer.appendChild(jokeText);
+        }
+      }
+    }
+  </script>
+</body>
+
+</html>
