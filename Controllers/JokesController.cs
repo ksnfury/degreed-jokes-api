@@ -36,17 +36,19 @@ public class JokesController : ControllerBase
 
         var jokes = _jokeService.SearchJokes(searchTerm);
 
-        if (jokes.Count == 0)
-            return NotFound();
-
-        var jokeDtos = new List<JokeDto>();
-        foreach (var joke in jokes)
+        if (jokes == null || jokes.Count == 0)
         {
-            var jokeDto = MapToDto(joke);
-            jokeDtos.Add(jokeDto);
+            return NotFound();
         }
 
-        return jokeDtos;
+        var categorizedJokes = new Dictionary<JokeLengthCategory, List<JokeDto>>();
+        foreach (var category in jokes.Keys)
+        {
+            var jokeDtos = jokes[category].Select(joke => MapToDto(joke)).ToList();
+            categorizedJokes.Add(category, jokeDtos);
+        }
+
+        return Ok(categorizedJokes); ;
     }
 
     private JokeDto MapToDto(Joke joke)
