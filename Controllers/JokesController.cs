@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using JokeApi.Services;
 using JokeApi.Models;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -59,5 +60,40 @@ public class JokesController : ControllerBase
             Text = joke.Text,
             Length = joke.Length
         };
+    }
+
+
+    // Login action for user
+    [HttpPost("login")]
+    public IActionResult Login([FromBody] LoginRequest request)
+    {
+        // Check if the username and password are valid (dummy implementation)
+        if (request.Username == "dummy" && request.Password == "password")
+        {
+            // Generate a JWT token (dummy implementation)
+            var token = GenerateJwtToken(request.Username);
+
+            // Return the JWT token as a response
+            return Ok(new { token });
+        }
+
+        // Return an unauthorized status code if the login credentials are invalid
+        return Unauthorized();
+    }
+
+    private string GenerateJwtToken(string username)
+    {
+        // Generate a JWT token using your preferred JWT library
+        // Include the necessary claims, such as username and any required roles/permissions
+
+        // Dummy implementation
+        var token = "dummy.jwt.token";
+        return token;
+    }
+
+    public class LoginRequest
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
     }
 }
