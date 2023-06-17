@@ -19,19 +19,6 @@ namespace JokeApi
             // Add required services
             services.AddControllers();
 
-            // Register your custom services
-            services.AddSingleton<IJokeService, JokeService>();
-
-            services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(builder =>
-                {
-                    builder.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                });
-            });
-
             // Configure authentication
             services.AddAuthentication(options =>
             {
@@ -46,12 +33,28 @@ namespace JokeApi
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = "your_issuer",
-                    ValidAudience = "your_audience",
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key")),
-                    ClockSkew = TimeSpan.Zero
+                    ValidIssuer = "JokeAPI",
+                    ValidAudience = "JokeAPIUsers",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("wZGZG2D+gG+7X+Y+kuRKMfbXSNYMaq0ZAwX3cJvT02c="))
                 };
             });
+
+            // Register your custom services
+            //services.AddSingleton<IJokeService, JokeService>();
+
+            services.AddScoped<IJokeService, JokeService>();
+
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+            });
+
+
 
             // Configure authorization
             services.AddAuthorization();
@@ -68,11 +71,15 @@ namespace JokeApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors();
-
             app.UseRouting();
 
-            // add authentication and authorisation
+            app.UseCors(builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            });
+
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -80,7 +87,7 @@ namespace JokeApi
             {
                 endpoints.MapControllers();
             });
-
         }
+
     }
 }
