@@ -11,11 +11,19 @@ namespace JokeApi.Services
 
         private readonly JokeDbContext _context;
 
-        public JokeService(JokeDbContext context)
+        public JokeService(IServiceProvider serviceProvider)
         {
-            _context = context;
 
-            // Initialize the fallback jokes if the database context is not available
+            try
+            {
+                _context = serviceProvider.GetRequiredService<JokeDbContext>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error resolving JokeDbContext: {ex.Message}");
+                _context = null;
+            }
+            
             // Initialize the fallback jokes if the database context is not available
             _fallbackJokes = new List<Joke>
             {
@@ -28,7 +36,7 @@ namespace JokeApi.Services
 
         public Joke GetRandomJoke()
         {
-             Joke joke;
+            Joke joke;
 
             if (_context != null)
             {
