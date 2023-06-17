@@ -5,7 +5,6 @@ namespace JokeApi.Services
     public interface IJokeService
     {
         Joke GetRandomJoke();
-        IEnumerable<Joke> GetJokes();
-        IEnumerable<Joke> SearchJokes(string searchTerm);
+        Dictionary<JokeLengthCategory, List<Joke>> SearchJokes(string searchTerm, int limit = 30);
     }
 }
