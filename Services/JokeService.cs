@@ -1,38 +1,95 @@
 using JokeApi.Models;
+using JokeApi.Data;
 
 namespace JokeApi.Services
 {
     public class JokeService : IJokeService
     {
-        private readonly List<Joke> _jokes;
 
-        public JokeService()
+        // this is for testing without any dbcontext
+        private readonly List<Joke> _fallbackJokes;
+
+        private readonly JokeDbContext _context;
+
+        public JokeService(JokeDbContext context)
         {
-            // Initialize the list of jokes
-            _jokes = new List<Joke>
+            _context = context;
+
+            // Initialize the fallback jokes if the database context is not available
+            // Initialize the fallback jokes if the database context is not available
+            _fallbackJokes = new List<Joke>
             {
-                new Joke { Id = 1, Text = "Why don't scientists trust atoms? Because they make up everything!", Length = 48 },
-                new Joke { Id = 2, Text = "How do you organize a space party? You planet!", Length = 40 },
-                new Joke { Id = 3, Text = "Why don't skeletons fight each other? They don't have the guts!", Length = 46 },
-                // Add more jokes as needed
+                new Joke { Id = 1, Text = "Why don't scientists trust atoms? Because they make up everything!", Length = 44 },
+                new Joke { Id = 2, Text = "Did you hear about the mathematician who's afraid of negative numbers? He'll stop at nothing to avoid them!", Length = 78 },
+                new Joke { Id = 3, Text = "Why don't skeletons fight each other? They don't have the guts!", Length = 55 },
             };
         }
 
+
         public Joke GetRandomJoke()
         {
-            Random random = new Random();
-            int randomIndex = random.Next(_jokes.Count);
-            return _jokes[randomIndex];
+             Joke joke;
+
+            if (_context != null)
+            {
+                // Use the database context to fetch a random joke
+                joke = _context.Jokes.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
+            }
+            else
+            {
+                // Fallback to the fallback jokes list if the database context is not available
+                var random = new Random();
+                var randomIndex = random.Next(_fallbackJokes.Count);
+                joke = _fallbackJokes[randomIndex];
+            }
+            return joke;
         }
 
-        public IEnumerable<Joke> GetJokes()
+        public Dictionary<JokeLengthCategory, List<Joke>> SearchJokes(string searchTerm, int limit)
         {
-            return _jokes;
+
+            var categorizedJokes = new Dictionary<JokeLengthCategory, List<Joke>>();
+
+            var matchingJokes = _context != null
+            ? _context.Jokes
+                .Where(j => j.Text.Contains(searchTerm))
+                .Take(limit)
+                .ToList()
+            : _fallbackJokes
+                .Where(j => j.Text.Contains(searchTerm))
+                .Take(limit)
+                .ToList();
+
+            foreach (var joke in matchingJokes)
+            {
+                var category = GetJokeLengthCategory(joke.Length);
+
+                if (!categorizedJokes.ContainsKey(category))
+                {
+                    categorizedJokes[category] = new List<Joke>();
+                }
+
+                categorizedJokes[category].Add(joke);
+            }
+
+            return categorizedJokes;
         }
 
-        public IEnumerable<Joke> SearchJokes(string searchTerm)
+        private JokeLengthCategory GetJokeLengthCategory(int length)
         {
-            return _jokes.Where(joke => joke.Text.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+            if (length < 10)
+            {
+                return JokeLengthCategory.Short;
+            }
+            else if (length < 20)
+            {
+                return JokeLengthCategory.Medium;
+            }
+            else
+            {
+                return JokeLengthCategory.Long;
+            }
         }
+
     }
 }
