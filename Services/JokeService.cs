@@ -11,7 +11,10 @@ namespace JokeApi.Services
 
         private readonly JokeDbContext _context;
 
-        public JokeService(IServiceProvider serviceProvider)
+        private readonly IHighlightingDecorator _highlightingDecorator;
+
+
+        public JokeService(IServiceProvider serviceProvider,  IHighlightingDecorator highlightingDecorator)
         {
 
             try
@@ -31,6 +34,8 @@ namespace JokeApi.Services
                 new Joke { Id = 2, Text = "Did you hear about the mathematician who's afraid of negative numbers? He'll stop at nothing to avoid them!", Length = 78 },
                 new Joke { Id = 3, Text = "Why don't skeletons fight each other? They don't have the guts!", Length = 55 },
             };
+
+            _highlightingDecorator = highlightingDecorator;
         }
 
 
@@ -76,6 +81,9 @@ namespace JokeApi.Services
                 {
                     categorizedJokes[category] = new List<Joke>();
                 }
+
+                 // Apply highlighting to the joke text
+                joke.Text = _highlightingDecorator.Decorate(joke.Text, searchTerm);
 
                 categorizedJokes[category].Add(joke);
             }

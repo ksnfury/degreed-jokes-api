@@ -43,6 +43,8 @@ namespace JokeApi
             //services.AddSingleton<IJokeService, JokeService>();
 
             services.AddScoped<IJokeService, JokeService>();
+            services.AddScoped<IHighlightingDecorator, EmphasisHighlightingDecorator>();
+
 
             services.AddCors(options =>
             {
