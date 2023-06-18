@@ -57,10 +57,13 @@ Next, click authorize in the top right corner and enter the token:
 
 Try the UI at JokeApi/HTML/jokeClient.html. This will provide the same functionality as above. Login with dummy/password.
 <img width="824" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/8c484b1b-3298-4804-9839-cf23140302dd">
+
 Try a random Joke:
+
 <img width="924" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/d9e88533-859e-4f98-b48b-4c81dacab256">
 
 Try a search term:
+
 <img width="1057" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/628b0dd5-b10d-45ee-81ce-d992cdc511dd">
 
 # Some design priniciples considered :
