@@ -10,6 +10,7 @@ public class Program
         return Host.CreateDefaultBuilder(args)
             .ConfigureWebHostDefaults(webBuilder =>
             {
+                webBuilder.UseUrls("http://localhost:5275"); 
                 webBuilder.UseStartup<JokeApi.Startup>();
             });
     }
