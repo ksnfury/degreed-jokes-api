@@ -39,24 +39,29 @@ Follow the steps below to get the Joke API up and running on your local machine:
 The API documentation provides details about the available endpoints and how to use them.
 You can access the documentation by navigating to `http://localhost:5275/swagger` in your web browser while the application is running.
 
-<img width="1488" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/30fedfc4-8ca8-4581-8ffb-40966bfc57b6">
+<img width="1526" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/3dd10002-230e-4f77-b423-315f4e16897a">
+
 
 First go to the login API. Enter the username/password=dummy/password and get the bearer token
 Next, click authorize in the top right corner and enter the token:
 
-<img width="1520" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/528f9e31-b77a-4c20-8adc-51da87e19b1e">
+<img width="1442" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/45ab604a-faed-493d-adfe-f618f6e77366">
 
 1. Try the random joke API. This doesn't require authentication
 2. Try the search API with a search term for a Joke like 'Dad'
 
+<img width="1523" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/9adb112b-b834-4140-95e9-160c2fe79251">
+
+
 # UI Documentation
 
-Try the UI at JokeApi/HTML/jokeClient.html. This will provide the same functionality as above. 
-<img width="1012" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/206dd04d-3397-406e-ad29-22d2fff93338">
+Try the UI at JokeApi/HTML/jokeClient.html. This will provide the same functionality as above. Login with dummy/password.
+<img width="824" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/8c484b1b-3298-4804-9839-cf23140302dd">
 Try a random Joke:
-<img width="1105" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/53dc36b0-dfdf-46f6-ac91-2b2b39362e78">
+<img width="924" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/d9e88533-859e-4f98-b48b-4c81dacab256">
+
 Try a search term:
-<img width="933" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/237c7cae-c129-4656-90e6-efedd6b1c869">
+<img width="1057" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/628b0dd5-b10d-45ee-81ce-d992cdc511dd">
 
 # Some design priniciples considered :
 
