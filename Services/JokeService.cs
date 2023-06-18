@@ -1,6 +1,7 @@
 using JokeApi.Models;
 using JokeApi.Data;
 using JokeApi.Services.Cache;
+using Microsoft.Extensions.Primitives;
 
 namespace JokeApi.Services
 {
@@ -16,9 +17,13 @@ namespace JokeApi.Services
 
         private readonly IJokeCache _jokeCache;
 
+        private readonly ILogger _logger;
 
-        public JokeService(IServiceProvider serviceProvider,  IHighlightingDecorator highlightingDecorator, IJokeCache jokeCache)
+
+        public JokeService(IServiceProvider serviceProvider,  IHighlightingDecorator highlightingDecorator, IJokeCache jokeCache, ILogger<JokeService> logger)
         {
+
+            _logger = logger;
 
             try
             {
@@ -26,23 +31,54 @@ namespace JokeApi.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error resolving JokeDbContext: {ex.Message}");
+                _logger.LogError($"Error resolving JokeDbContext: {ex.Message}");
                 _context = null;
+               
             }
-            
+
             // Initialize the fallback jokes if the database context is not available
-            _fallbackJokes = new List<Joke>
-            {
-                new Joke { Id = 1, Text = "Why don't scientists trust atoms? Because they make up everything!", Length = 44 },
-                new Joke { Id = 2, Text = "Did you hear about the mathematician who's afraid of negative numbers? He'll stop at nothing to avoid them!", Length = 78 },
-                new Joke { Id = 3, Text = "Why don't skeletons fight each other? They don't have the guts!", Length = 55 },
-            };
+            _fallbackJokes = RetrieveFallbackJokesFromPropertiesFile();        
 
             _highlightingDecorator = highlightingDecorator;
 
             _jokeCache = jokeCache;
         }
 
+
+        private List<Joke> RetrieveFallbackJokesFromPropertiesFile()
+        {
+
+            if (_fallbackJokes != null)
+            {
+                // Fallback jokes already loaded, return the stored list
+                return _fallbackJokes;
+            }
+
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var fallbackJokesFilePath = configuration["FallbackJokesFilePath"]; // Specify the path to the fallback jokes properties file in appsettings.json
+
+            var fallbackJokes = new List<Joke>();
+
+            if (File.Exists(fallbackJokesFilePath))
+            {
+                var properties = File.ReadAllLines(fallbackJokesFilePath)
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .Select(line => line.Split('='))
+                    .ToDictionary(parts => parts[0].Trim().Substring(4), parts => parts[1].Trim());
+
+                foreach (var kvp in properties)
+                {
+                    var joke = new Joke { Id = int.Parse(kvp.Key), Text = kvp.Value , Length = kvp.Value.Length};
+                    fallbackJokes.Add(joke);
+                }
+            }
+
+            return fallbackJokes;
+        }
 
         public Joke GetRandomJoke()
         {

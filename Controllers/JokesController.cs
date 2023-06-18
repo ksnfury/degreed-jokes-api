@@ -101,7 +101,6 @@ public class JokesController : ControllerBase
         var claims = new[]
         {
         new Claim(ClaimTypes.Name, username)
-        // Add additional claims as needed
     };
 
         // Create the JWT token
@@ -109,7 +108,7 @@ public class JokesController : ControllerBase
             issuer: "JokeAPI",
             audience: "JokeAPIUsers",
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(15), // Set the token expiration time
+            expires: DateTime.UtcNow.AddMinutes(15), 
             signingCredentials: credentials);
 
         // Serialize the token to a string

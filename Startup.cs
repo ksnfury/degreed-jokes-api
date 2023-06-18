@@ -53,6 +53,10 @@ namespace JokeApi
                 return new LRUJokeCache(10, logger);
             });
 
+            // adding logger to JokeService
+            services.AddSingleton<ILogger<JokeService>, Logger<JokeService>>();
+
+
             // Add logger services
             services.AddLogging();
 
