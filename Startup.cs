@@ -5,6 +5,8 @@ using System.Text;
 using JokeApi.Services.Cache;
 using JokeApi.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using JokeApi.Swagger;
 
 
 namespace JokeApi
@@ -95,6 +97,36 @@ namespace JokeApi
             // Add controllers
             services.AddControllers();
 
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Joke API", Version = "v1" });
+
+                // Define the security scheme as "Bearer"
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    Description = "Enter 'Bearer' followed by a space and the JWT token",
+                });
+
+                // Add the security requirement to all operations
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] { }
+                    }
+                });
+            });
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -119,6 +151,12 @@ namespace JokeApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Joke API V1");
             });
         }
 
