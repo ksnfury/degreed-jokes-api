@@ -1,6 +1,7 @@
 using JokeApi.Models;
 using JokeApi.Data;
 using JokeApi.Services.Cache;
+using Microsoft.EntityFrameworkCore;
 
 namespace JokeApi.Services
 {
@@ -63,8 +64,9 @@ namespace JokeApi.Services
 
             if (_context != null)
             {
-                // Use the database context to fetch a random joke
-                joke = _context.Jokes.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
+                var randomJoke = _context.Jokes.FromSqlRaw("SELECT * FROM Jokes ORDER BY RAND() LIMIT 1").FirstOrDefault();
+
+                return randomJoke;
             }
             else
             {
