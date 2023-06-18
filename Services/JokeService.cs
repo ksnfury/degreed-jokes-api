@@ -1,5 +1,6 @@
 using JokeApi.Models;
 using JokeApi.Data;
+using JokeApi.Services.Cache;
 
 namespace JokeApi.Services
 {
@@ -13,8 +14,10 @@ namespace JokeApi.Services
 
         private readonly IHighlightingDecorator _highlightingDecorator;
 
+        private readonly IJokeCache _jokeCache;
 
-        public JokeService(IServiceProvider serviceProvider,  IHighlightingDecorator highlightingDecorator)
+
+        public JokeService(IServiceProvider serviceProvider,  IHighlightingDecorator highlightingDecorator, IJokeCache jokeCache)
         {
 
             try
@@ -36,6 +39,8 @@ namespace JokeApi.Services
             };
 
             _highlightingDecorator = highlightingDecorator;
+
+            _jokeCache = jokeCache;
         }
 
 
@@ -61,6 +66,24 @@ namespace JokeApi.Services
         public Dictionary<JokeLengthCategory, List<Joke>> SearchJokes(string searchTerm, int limit)
         {
 
+            // first check cache if there is a hit 
+            var cachedResults = _jokeCache.Get(searchTerm);
+
+            if (cachedResults != null)
+            {
+                return cachedResults;
+            }
+
+            Dictionary<JokeLengthCategory, List<Joke>> categorizedJokes = GetJokesFromSource(searchTerm, limit);
+
+            // Add the cache miss to the cache
+            _jokeCache.Set(searchTerm, categorizedJokes);
+
+            return categorizedJokes;
+        }
+
+        private Dictionary<JokeLengthCategory, List<Joke>> GetJokesFromSource(string searchTerm, int limit)
+        {
             var categorizedJokes = new Dictionary<JokeLengthCategory, List<Joke>>();
 
             var matchingJokes = _context != null
@@ -82,7 +105,7 @@ namespace JokeApi.Services
                     categorizedJokes[category] = new List<Joke>();
                 }
 
-                 // Apply highlighting to the joke text
+                // Apply highlighting to the joke text
                 joke.Text = _highlightingDecorator.Decorate(joke.Text, searchTerm);
 
                 categorizedJokes[category].Add(joke);

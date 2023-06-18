@@ -2,6 +2,7 @@ using JokeApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using JokeApi.Services.Cache;
 
 namespace JokeApi
 {
@@ -16,6 +17,7 @@ namespace JokeApi
 
         public void ConfigureServices(IServiceCollection services)
         {
+
             // Add required services
             services.AddControllers();
 
@@ -40,11 +42,19 @@ namespace JokeApi
             });
 
             // Register your custom services
-            //services.AddSingleton<IJokeService, JokeService>();
 
             services.AddScoped<IJokeService, JokeService>();
             services.AddScoped<IHighlightingDecorator, EmphasisHighlightingDecorator>();
+        
+            services.AddSingleton<ILogger<LRUJokeCache>, Logger<LRUJokeCache>>();
+            services.AddSingleton<IJokeCache>(provider =>
+            {
+                ILogger<LRUJokeCache> logger = provider.GetRequiredService<ILogger<LRUJokeCache>>();
+                return new LRUJokeCache(10, logger);
+            });
 
+            // Add logger services
+            services.AddLogging();
 
             services.AddCors(options =>
             {
@@ -55,8 +65,6 @@ namespace JokeApi
                         .AllowAnyHeader();
                 });
             });
-
-
 
             // Configure authorization
             services.AddAuthorization();
