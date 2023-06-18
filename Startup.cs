@@ -6,8 +6,6 @@ using JokeApi.Services.Cache;
 using JokeApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using JokeApi.Swagger;
-
 
 namespace JokeApi
 {
