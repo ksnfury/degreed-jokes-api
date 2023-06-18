@@ -59,8 +59,22 @@ Try a search term:
 <img width="933" alt="image" src="https://github.com/ksnfury/degreed-jokes-api/assets/8427974/237c7cae-c129-4656-90e6-efedd6b1c869">
 
 # Some design priniciples considered :
-1. Segregation of resposibilities of model, views and controllers
-2. Usage of Fallback from File in case DB is down
-3. Joke LRU Cache is used in case the same request is triggered
+
+1. Separation of Concerns: The application follows the principle of separation of concerns by dividing functionality into distinct components such as controllers, services, and middleware. This promotes modular and maintainable code.
+
+2. API Versioning: We have implemented API versioning to support future changes and updates to the API without breaking existing client applications. This allows for backward compatibility and smooth transitions between API versions.
+
+3. Swagger Documentation: We have integrated Swagger UI to provide interactive API documentation. Swagger helps in visualizing and testing the API endpoints, making it easier for developers to understand and consume the API.
+
+4. Exception Handling: The application includes centralized exception handling to handle and log any exceptions that occur during the execution of API requests. This ensures proper error responses are returned to clients and facilitates troubleshooting and debugging.
+
+5. Authentication and Authorization: We have added token-based authentication using JWT (JSON Web Tokens) to secure the API endpoints. The application validates the incoming JWT token and authorizes access based on user roles and permissions.
+
+6. Dependency Injection: The application uses dependency injection to manage and resolve dependencies between components. This promotes loose coupling and facilitates unit testing and extensibility.
+
+Others which I considered but could not complete are:
+
+1. Rate limiting - This would be really nice to have to prevent abuse of resources
+2. Unit/Integration Tests - these would ensure that the App goes into production with confidence
 
 
