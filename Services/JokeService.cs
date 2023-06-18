@@ -1,7 +1,6 @@
 using JokeApi.Models;
 using JokeApi.Data;
 using JokeApi.Services.Cache;
-using Microsoft.Extensions.Primitives;
 
 namespace JokeApi.Services
 {
@@ -20,7 +19,7 @@ namespace JokeApi.Services
         private readonly ILogger _logger;
 
 
-        public JokeService(IServiceProvider serviceProvider,  IHighlightingDecorator highlightingDecorator, IJokeCache jokeCache, ILogger<JokeService> logger)
+        public JokeService(IServiceProvider serviceProvider, IHighlightingDecorator highlightingDecorator, IJokeCache jokeCache, ILogger<JokeService> logger)
         {
 
             _logger = logger;
@@ -33,11 +32,15 @@ namespace JokeApi.Services
             {
                 _logger.LogError($"Error resolving JokeDbContext: {ex.Message}");
                 _context = null;
-               
+
             }
 
             // Initialize the fallback jokes if the database context is not available
-            _fallbackJokes = RetrieveFallbackJokesFromPropertiesFile();        
+            if (_fallbackJokes == null)
+            {
+                // Fallback jokes to be loaded from the properties file
+                _fallbackJokes = JokeHelper.RetrieveFallbackJokesFromPropertiesFile();
+            }
 
             _highlightingDecorator = highlightingDecorator;
 
@@ -48,36 +51,10 @@ namespace JokeApi.Services
         private List<Joke> RetrieveFallbackJokesFromPropertiesFile()
         {
 
-            if (_fallbackJokes != null)
-            {
-                // Fallback jokes already loaded, return the stored list
-                return _fallbackJokes;
-            }
+            var configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
 
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build();
-
-            var fallbackJokesFilePath = configuration["FallbackJokesFilePath"]; // Specify the path to the fallback jokes properties file in appsettings.json
-
-            var fallbackJokes = new List<Joke>();
-
-            if (File.Exists(fallbackJokesFilePath))
-            {
-                var properties = File.ReadAllLines(fallbackJokesFilePath)
-                    .Where(line => !string.IsNullOrWhiteSpace(line))
-                    .Select(line => line.Split('='))
-                    .ToDictionary(parts => parts[0].Trim().Substring(4), parts => parts[1].Trim());
-
-                foreach (var kvp in properties)
-                {
-                    var joke = new Joke { Id = int.Parse(kvp.Key), Text = kvp.Value , Length = kvp.Value.Length};
-                    fallbackJokes.Add(joke);
-                }
-            }
-
-            return fallbackJokes;
+            var fallbackJokesFilePath = configuration["FallbackJokesFilePath"];
+            return JokeHelper.RetrieveFallbackJokesFromPropertiesFile();
         }
 
         public Joke GetRandomJoke()

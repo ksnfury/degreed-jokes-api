@@ -13,11 +13,19 @@ namespace JokeApi.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Joke>(entity =>
-            {
-                entity.ToTable("Jokes");
-                entity.Property(e => e.Text).IsRequired();
-            });
+            // Configure the Joke entity
+            modelBuilder.Entity<Joke>()
+                .HasKey(j => j.Id);
+
+            modelBuilder.Entity<Joke>()
+                .Property(j => j.Text)
+                .IsRequired();
+
+            modelBuilder.Entity<Joke>()
+                .Property(j => j.Length)
+                .IsRequired();
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

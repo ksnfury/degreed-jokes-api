@@ -70,7 +70,9 @@
       <div class="button-container">
         <button id="search-btn">Search</button>
       </div>
-      <div id="search-results" style="margin-top: 20px;"></div>
+      <div id="search-results" style="margin-top: 20px;">
+        <p id="search-results-message" style="display: none;"></p>
+      </div>
     </div>
   </div>
 
@@ -89,6 +91,8 @@
     const searchTermInput = document.getElementById('search-term');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
+    const searchResultsMessage = document.getElementById('search-results-message');
+
 
     loginBtn.addEventListener('click', () => {
       const username = usernameInput.value;
@@ -159,6 +163,7 @@
           // Show the random joke container and hide other containers
           randomJokeContainer.style.display = 'block';
           searchJokesContainer.style.display = 'none';
+          searchResultsElement.style.display = 'none';
         })
         .catch(error => {
           console.error('Failed to fetch random joke:', error);
@@ -180,35 +185,56 @@
           Authorization: `Bearer ${token}`,
         },
       })
-        .then(response => response.json())
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else if (response.status === 404) {
+            throw new Error('No jokes found for the search term');
+          } else {
+            throw new Error('Failed to fetch search results');
+          }
+        }
+        )
         .then(data => {
-          // Display the search results
+          // Display the search results or show a message if no jokes found
           displayJokes(data);
 
           // Show the search results container and hide other containers
           randomJokeContainer.style.display = 'none';
           searchJokesContainer.style.display = 'block';
+          searchResultsElement.style.display = 'block';
         })
         .catch(error => {
+          displayJokes();
           console.error('Failed to fetch search results:', error);
         });
     }
 
     function displayJokes(jokes) {
-      const jokeContainer = document.getElementById('jokes-container');
-      jokeContainer.innerHTML = '';
+      searchResultsElement.innerHTML = ''; // Clear existing jokes
+
+      let hasJokes = false;
 
       for (const category in jokes) {
         const categoryJokes = jokes[category];
-        const categoryHeading = document.createElement('h3');
-        categoryHeading.textContent = category;
-        jokeContainer.appendChild(categoryHeading);
 
-        for (const joke of categoryJokes) {
-          const jokeText = document.createElement('p');
-          jokeText.innerHTML = joke.text;
-          jokeContainer.appendChild(jokeText);
+        if (categoryJokes.length > 0) {
+          hasJokes = true;
+
+          const categoryHeading = document.createElement('h3');
+          categoryHeading.textContent = category;
+          searchResultsElement.appendChild(categoryHeading);
+
+          for (const joke of categoryJokes) {
+            const jokeText = document.createElement('p');
+            jokeText.innerHTML = joke.text;
+            searchResultsElement.appendChild(jokeText);
+          }
         }
+      }
+
+      if (!hasJokes) {
+        searchResultsElement.innerHTML = '<p>No jokes found.</p>';
       }
     }
   </script>

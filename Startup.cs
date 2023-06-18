@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using JokeApi.Services.Cache;
+using JokeApi.Data;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace JokeApi
 {
@@ -17,6 +20,22 @@ namespace JokeApi
 
         public void ConfigureServices(IServiceCollection services)
         {
+
+            // Add MySQL database
+            services.AddDbContext<JokeDbContext>(options =>
+            {
+                options.UseMySql(_configuration.GetConnectionString("DefaultConnection"), new MySqlServerVersion(new Version(8, 0, 33)));
+            });
+
+            // Initialize the database and seed data
+            using (var scope = services.BuildServiceProvider().CreateScope())
+            {
+                var serviceProvider = scope.ServiceProvider;
+                var dbContext = serviceProvider.GetRequiredService<JokeDbContext>();
+
+                // Create the database if it doesn't exist and seed it with initial data
+                DbInitializer.Initialize(dbContext);
+            }
 
             // Add required services
             services.AddControllers();
@@ -45,7 +64,7 @@ namespace JokeApi
 
             services.AddScoped<IJokeService, JokeService>();
             services.AddScoped<IHighlightingDecorator, EmphasisHighlightingDecorator>();
-        
+
             services.AddSingleton<ILogger<LRUJokeCache>, Logger<LRUJokeCache>>();
             services.AddSingleton<IJokeCache>(provider =>
             {
